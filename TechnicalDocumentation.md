@@ -143,7 +143,109 @@ double piecewiseConstantInterpolation(double x){
 ```
 
 ### Nearest Neighbor Interpolation Implementation
-**- TBD (Shreyan)**
+#include <iostream>
+#include <vector>
+#include <fstream>
+#include <sstream>
+#include <algorithm>
+using namespace std;
+
+// Structure to represent a 2D point with x and y coordinates
+struct Point {
+    double x, y;
+};
+
+class Interpolation {
+    vector<Point> points;
+public:
+    // Store input points for interpolation
+    void processInput(vector<Point> &inputPoints) {
+        points = inputPoints;
+    }
+
+    // Nearest Neighbor Interpolation method
+    // Finds the closest point to the given x and returns its y-value
+    double calculateValue(double x) {
+        // Start with first point as the nearest
+        int nearestIndex = 0;
+        double minDistance = abs(points[0].x - x);
+
+        // Iterate through points to find the closest point
+        for (int i = 1; i < points.size(); i++) {
+            // Calculate absolute distance between current point and query x
+            double distance = abs(points[i].x - x);
+            
+            // Update nearest point if a closer point is found
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearestIndex = i;
+            }
+        }
+
+        // Return y-value of the nearest point
+        return points[nearestIndex].y;
+    }
+};
+
+// Function to load and process data points from a file
+vector<Point> loadData(const char* fileName) {
+    vector<Point> tempPoints;
+    ifstream file(fileName);
+
+    // Check if file is successfully opened
+    if (!file.is_open()) {
+        cerr << "[Input Error] Could not open file." << endl;
+        exit(1);
+    }
+
+    string line;
+    // Read points from file line by line
+    while (getline(file, line)) {
+        istringstream iss(line);
+        double x, y;
+        
+        // Parse x and y coordinates from each line
+        if (!(iss >> x >> y)) {
+            cerr << "[Input Warning] Could not parse line: " << line << endl;
+            continue;
+        }
+        
+        // Add parsed point to vector
+        tempPoints.push_back({x, y});
+    }
+
+    // Sort points by x-coordinate for consistent processing
+    sort(tempPoints.begin(), tempPoints.end(), [](const Point& a, const Point& b) {
+        return a.x < b.x;
+    });
+
+    // Print number of points parsed
+    cout << "[Success] Parsed " << tempPoints.size() << " points from input file." << endl;
+    return tempPoints;
+}
+
+int main(int argc, char const *argv[]) {
+    // Ensure correct command-line argument
+    if (argc != 2) {
+        cout << "Usage: ./interpolate <FileName>" << endl;
+        return 1;
+    }
+
+    // Load data points from specified file
+    const char* fileName = argv[1];
+    vector<Point> points = loadData(fileName);
+
+    // Create interpolation object
+    Interpolation interpolator;
+    interpolator.processInput(points);
+
+    // Example interpolation at x = 4.0
+    double x = 4.0;
+    double result = interpolator.calculateValue(x);
+    cout << "The interpolated value at x=" << x << " is: " << result << endl;
+
+    return 0;
+}
 
 ### Linear Interpolation Implementation
 **- TBD (Hayagrivan)**
